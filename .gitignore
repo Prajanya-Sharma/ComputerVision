@@ -32,3 +32,8 @@ Thumbs.db
 # Ignore Jupyter notebook checkpoints
 .ipynb_checkpoints/
 
+# Ignore uploaded test images
+test_uploads/
+
+# Ignore all dataset folders and their contents
+ai_model/fabric_classifier/dataset/
