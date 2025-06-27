@@ -26,17 +26,6 @@ def deskew(image: np.ndarray) -> np.ndarray:
 def preprocess_for_ocr(image_path: str) -> np.ndarray:
     """
     Load an image, enhance it for OCR, and return a 3-channel BGR image ready for PaddleOCR.
-    Steps:
-      1. Upscale (×2) via bicubic interpolation
-      2. Grayscale conversion
-      3. Bilateral filtering to reduce noise (preserves edges)
-      4. CLAHE for local contrast enhancement
-      5. Deskew based on text regions
-      6. Adaptive thresholding (binary)
-      7. Morphological closing to fill small gaps
-      8. Inversion to dark-on-light background
-      9. Sharpening to accentuate strokes
-     10. Convert to BGR
     """
     # 1. Load & upscale
     img = cv2.imread(image_path)
@@ -47,14 +36,17 @@ def preprocess_for_ocr(image_path: str) -> np.ndarray:
     # 2. Grayscale
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # 3. Noise reduction (bilateral filter)
+    # 3. Noise reduction
     denoised = cv2.bilateralFilter(gray, d=9, sigmaColor=75, sigmaSpace=75)
 
+    # 4. Contrast enhancement
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
     enhanced = clahe.apply(denoised)
 
+    # 5. Deskewing
     deskewed = deskew(enhanced)
 
+    # 6. Adaptive thresholding
     thresh = cv2.adaptiveThreshold(
         deskewed, 255,
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
@@ -63,33 +55,44 @@ def preprocess_for_ocr(image_path: str) -> np.ndarray:
         C=3
     )
 
+    # 7. Morphological closing
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     closed = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=1)
 
+    # 8. Invert
     inverted = cv2.bitwise_not(closed)
 
+    # 9. Sharpen
     kernel_sharp = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
     sharpened = cv2.filter2D(inverted, -1, kernel_sharp)
 
+    # 10. Convert to BGR for PaddleOCR
     return cv2.cvtColor(sharpened, cv2.COLOR_GRAY2BGR)
 
-def main():
-    ocr = PaddleOCR(
-        lang='en',
-        use_angle_cls=True
-    )
-    image_path = r'C:\Users\Prajanya\Desktop\wallmartHack\ai_model\logo_detector\testimg.jpg'
-
+def get_logo_text(image_path: str):
+    """
+    Use PaddleOCR to extract text from a processed logo image.
+    Returns a list of (text, confidence) tuples.
+    """
+    ocr = PaddleOCR(lang='en', use_angle_cls=True)
     processed_img = preprocess_for_ocr(image_path)
-
     results = ocr.predict(processed_img)
 
-    print("\n🧾 Detected Text:")
+    text_blocks = []
     for res in results:
-        texts  = res.get('rec_texts', [])
+        texts = res.get('rec_texts', [])
         scores = res.get('rec_scores', [])
         for txt, sc in zip(texts, scores):
-            print(f"{txt} (Confidence: {sc:.2f})")
+            text_blocks.append((txt, sc))
+    return text_blocks
+
+def main():
+    image_path = r'C:\Users\Prajanya\Desktop\wallmartHack\ai_model\logo_detector\testimg.jpg'
+    text_blocks = get_logo_text(image_path)
+
+    print("\n🧾 Detected Text:")
+    for txt, score in text_blocks:
+        print(f"{txt} (Confidence: {score:.2f})")
 
 if __name__ == "__main__":
     main()
