@@ -12,7 +12,7 @@ DATASET_DIR = "ai_model/fabric_classifier/dataset"
 BATCH_SIZE = 8
 IMG_SIZE = (224, 224)
 EPOCHS = 5
-MODEL_SAVE_PATH = "ai_model/fabric_classifier/fabric_model.h5"
+MODEL_SAVE_PATH = "ai_model/fabric_classifier/fabric_model.keras"
 
 # Data Loading
 datagen = ImageDataGenerator(

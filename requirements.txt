@@ -4,3 +4,6 @@ numpy
 pillow
 scikit-learn
 scipy   
+opencv-python
+pytesseract
+easyocr==1.6.2
