@@ -1,11 +1,16 @@
-import requests
+import os
 import time
+import requests
+from dotenv import load_dotenv
 from openai import OpenAI, RateLimitError
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# Load environment variables from .env
+load_dotenv()
+
 # API Keys
-IMGBB_API_KEY = "5c98b5f5eca912eb091c5015bc015f54"
-OPENROUTER_API_KEY = "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"
+IMGBB_API_KEY = os.getenv("IMGBB_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -38,8 +43,8 @@ def query_gemini(image_url):
                     }
                 ],
                 extra_headers={
-                    "HTTP-Referer": "http://localhost",
-                    "X-Title": "Multi-Image Captioning",
+                    "HTTP-Referer": os.getenv("YOUR_SITE_URL"),
+                    "X-Title": os.getenv("YOUR_SITE_NAME"),
                 }
             )
             return completion.choices[0].message.content
