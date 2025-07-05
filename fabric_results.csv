@@ -1,0 +1,5 @@
+Image,FabricType
+ai_model/deepseek_vl/testimg.jpg,Mesh.
+ai_model/deepseek_vl/testimg2.jpg,Wool.
+ai_model/deepseek_vl/testimg3.jpg,Knit.
+ai_model/deepseek_vl/testimg4.jpg," Error analyzing image: Error code: 400 - {'error': {'message': 'context deadline exceeded', 'type': 'invalid_request_error'}}"
